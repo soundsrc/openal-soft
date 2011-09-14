@@ -82,16 +82,21 @@ static void* thread_function(void* arg)
 
     int bufferSizeInBytes = (*env)->CallStaticIntMethod(env, cAudioTrack, 
         mGetMinBufferSize, sampleRateInHz, channelConfig, audioFormat);
+	int minBufferSize=bufferSizeInBytes;
 
     int bufferSizeInSamples = bufferSizeInBytes / aluFrameSizeFromFormat(device->Format);
 
     jobject track = (*env)->NewObject(env, cAudioTrack, mAudioTrack,
         STREAM_MUSIC, sampleRateInHz, channelConfig, audioFormat, device->NumUpdates * bufferSizeInBytes, MODE_STREAM);
 
-    (*env)->CallNonvirtualVoidMethod(env, track, cAudioTrack, mPlay);
+	int started=0;
+	int overallBytes=0;
+		
+    //(*env)->CallNonvirtualVoidMethod(env, track, cAudioTrack, mPlay);
 
     jarray buffer = (*env)->NewByteArray(env, bufferSizeInBytes);
 
+	AL_PRINT("Thread started");
     while (data->running)
     {
         void* pBuffer = (*env)->GetPrimitiveArrayCritical(env, buffer, NULL);
@@ -100,15 +105,26 @@ static void* thread_function(void* arg)
         {
             aluMixData(device, pBuffer, bufferSizeInSamples);
             (*env)->ReleasePrimitiveArrayCritical(env, buffer, pBuffer, 0);
-
-            (*env)->CallNonvirtualIntMethod(env, track, cAudioTrack, mWrite, buffer, 0, bufferSizeInBytes);
+			if(bufferSizeInBytes >= 0){
+				if (started) {
+					(*env)->CallNonvirtualIntMethod(env, track, cAudioTrack, mWrite, buffer, 0, bufferSizeInBytes);
+				}
+                else {
+					overallBytes += (*env)->CallNonvirtualIntMethod(env, track, cAudioTrack, mWrite, buffer, 0, bufferSizeInBytes);
+					if (overallBytes >= (device->NumUpdates * bufferSizeInBytes)){
+						(*env)->CallNonvirtualVoidMethod(env, track, cAudioTrack, mPlay);
+						started = 1;
+					}
+				}
+            }			
         }
         else
         {
             AL_PRINT("Failed to get pointer to array bytes");
         }
     }
-    
+	AL_PRINT("Thread ended");
+	
     (*env)->CallNonvirtualVoidMethod(env, track, cAudioTrack, mStop);
     (*env)->CallNonvirtualVoidMethod(env, track, cAudioTrack, mRelease);
 
@@ -173,7 +189,10 @@ static void android_close_playback(ALCdevice *device)
     }
 }
 
-static ALCboolean android_reset_playback(ALCdevice *device)
+AL_API ALCboolean android_reset_playback(ALCdevice *device);
+AL_API void android_stop_playback(ALCdevice *device);
+
+ALCboolean android_reset_playback(ALCdevice *device)
 {
     AndroidData* data = (AndroidData*)device->ExtraData;
 
@@ -194,7 +213,7 @@ static ALCboolean android_reset_playback(ALCdevice *device)
     return ALC_TRUE;
 }
 
-static void android_stop_playback(ALCdevice *device)
+void android_stop_playback(ALCdevice *device)
 {
     AndroidData* data = (AndroidData*)device->ExtraData;
 

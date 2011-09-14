@@ -2027,6 +2027,8 @@ ALC_API ALCdevice* ALC_APIENTRY alcOpenDevice(const ALCchar *deviceName)
     device->Bs2bLevel = GetConfigValueInt(NULL, "cf_level", 0);
 
     device->HeadDampen = 0.0f;
+	device->Frequency=22050;
+	device->NumUpdates=1;
 
     // Find a playback device to open
     SuspendContext(NULL);

@@ -90,6 +90,7 @@
 
 /* Define if we have fesetround() */
 /* #cmakedefine HAVE_FESETROUND */
+#define HAVE_FESETROUND 1
 
 /* Define if we have _controlfp() */
 /* #cmakedefine HAVE__CONTROLFP */
