@@ -69,6 +69,9 @@ static BackendInfo BackendList[] = {
 #ifdef HAVE_PORTAUDIO
     { "port", alc_pa_init, alc_pa_deinit, alc_pa_probe, EmptyFuncs },
 #endif
+#ifdef HAVE_ANDROID
+    { "android", alc_android_init, alc_android_deinit, alc_android_probe, EmptyFuncs },
+#endif
 
     { "null", alc_null_init, alc_null_deinit, alc_null_probe, EmptyFuncs },
 #ifdef HAVE_WAVE
@@ -638,6 +641,9 @@ void al_print(const char *fname, unsigned int line, const char *fmt, ...)
     }
     str[sizeof(str)-1] = 0;
 
+#ifdef ANDROID
+    __android_log_write(ANDROID_LOG_WARN, "OpenAL", str);
+#endif
     fprintf(LogFile, "%s", str);
     fflush(LogFile);
 }
@@ -2185,6 +2191,8 @@ ALC_API ALCdevice* ALC_APIENTRY alcOpenDevice(const ALCchar *deviceName)
     device->DuplicateStereo = GetConfigValueBool(NULL, "stereodup", 1);
 
     device->HeadDampen = 0.0f;
+	device->Frequency=22050;
+	device->NumUpdates=1;
 
     // Find a playback device to open
     SuspendContext(NULL);
