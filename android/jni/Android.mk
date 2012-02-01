@@ -31,6 +31,8 @@ LOCAL_SRC_FILES  := ../../OpenAL32/alAuxEffectSlot.c \
                     ../../Alc/ALu.c                  \
                     ../../Alc/android.c              \
                     ../../Alc/bs2b.c                 \
+                    ../../Alc/mixer.c                \
+                    ../../Alc/panning.c              \
                     ../../Alc/null.c                 \
 
 LOCAL_CFLAGS     := -DAL_BUILD_LIBRARY -DAL_ALEXT_PROTOTYPES

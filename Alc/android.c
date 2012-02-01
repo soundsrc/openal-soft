@@ -77,14 +77,14 @@ static void* thread_function(void* arg)
     (*env)->PushLocalFrame(env, 2);
 
     int sampleRateInHz = device->Frequency;
-    int channelConfig = aluChannelsFromFormat(device->Format) == 1 ? CHANNEL_CONFIGURATION_MONO : CHANNEL_CONFIGURATION_STEREO;
-    int audioFormat = aluBytesFromFormat(device->Format) == 1 ? ENCODING_PCM_8BIT : ENCODING_PCM_16BIT;
+    int channelConfig = ChannelsFromDevFmt(device->FmtChans) == 1 ? CHANNEL_CONFIGURATION_MONO : CHANNEL_CONFIGURATION_STEREO;
+    int audioFormat = BytesFromDevFmt(device->FmtType) == 1 ? ENCODING_PCM_8BIT : ENCODING_PCM_16BIT;
 
     int bufferSizeInBytes = (*env)->CallStaticIntMethod(env, cAudioTrack, 
         mGetMinBufferSize, sampleRateInHz, channelConfig, audioFormat);
 	int minBufferSize=bufferSizeInBytes;
 
-    int bufferSizeInSamples = bufferSizeInBytes / aluFrameSizeFromFormat(device->Format);
+    int bufferSizeInSamples = bufferSizeInBytes / FrameSizeFromDevFmt(device->FmtChans,device->FmtType);
 
     jobject track = (*env)->NewObject(env, cAudioTrack, mAudioTrack,
         STREAM_MUSIC, sampleRateInHz, channelConfig, audioFormat, device->NumUpdates * bufferSizeInBytes, MODE_STREAM);
@@ -196,6 +196,8 @@ ALCboolean android_reset_playback(ALCdevice *device)
 {
     AndroidData* data = (AndroidData*)device->ExtraData;
 
+#if 0
+    // comment out for now
     if (aluChannelsFromFormat(device->Format) >= 2)
     {
         device->Format = aluBytesFromFormat(device->Format) >= 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_STEREO8;
@@ -204,6 +206,7 @@ ALCboolean android_reset_playback(ALCdevice *device)
     {
         device->Format = aluBytesFromFormat(device->Format) >= 2 ? AL_FORMAT_MONO16 : AL_FORMAT_MONO8;
     }
+#endif
 
     SetDefaultChannelOrder(device);
 
