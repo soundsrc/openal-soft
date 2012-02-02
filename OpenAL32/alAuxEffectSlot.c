@@ -58,10 +58,10 @@ AL_API ALvoid AL_APIENTRY alGenAuxiliaryEffectSlots(ALsizei n, ALuint *effectslo
         i = 0;
         while(i < n)
         {
-            ALeffectslot *slot = calloc(1, sizeof(ALeffectslot));
+            ALeffectslot *slot = alCalloc(1, sizeof(ALeffectslot));
             if(!slot || !(slot->EffectState=NoneCreate()))
             {
-                free(slot);
+                alFree(slot);
                 // We must have run out or memory
                 alSetError(Context, AL_OUT_OF_MEMORY);
                 alDeleteAuxiliaryEffectSlots(i, effectslots);
@@ -75,7 +75,7 @@ AL_API ALvoid AL_APIENTRY alGenAuxiliaryEffectSlots(ALsizei n, ALuint *effectslo
             {
                 ALTHUNK_REMOVEENTRY(slot->effectslot);
                 ALEffect_Destroy(slot->EffectState);
-                free(slot);
+                alFree(slot);
 
                 alSetError(Context, err);
                 alDeleteAuxiliaryEffectSlots(i, effectslots);
@@ -148,7 +148,7 @@ AL_API ALvoid AL_APIENTRY alDeleteAuxiliaryEffectSlots(ALsizei n, ALuint *effect
             ALTHUNK_REMOVEENTRY(EffectSlot->effectslot);
 
             memset(EffectSlot, 0, sizeof(ALeffectslot));
-            free(EffectSlot);
+            alFree(EffectSlot);
         }
     }
 
@@ -436,7 +436,7 @@ AL_API ALvoid AL_APIENTRY alGetAuxiliaryEffectSlotfv(ALuint effectslot, ALenum p
 
 
 static ALvoid NoneDestroy(ALeffectState *State)
-{ free(State); }
+{ alFree(State); }
 static ALboolean NoneDeviceUpdate(ALeffectState *State, ALCdevice *Device)
 {
     return AL_TRUE;
@@ -461,7 +461,7 @@ ALeffectState *NoneCreate(void)
 {
     ALeffectState *state;
 
-    state = calloc(1, sizeof(*state));
+    state = alCalloc(1, sizeof(*state));
     if(!state)
         return NULL;
 
@@ -522,6 +522,6 @@ ALvoid ReleaseALAuxiliaryEffectSlots(ALCcontext *Context)
 
         ALTHUNK_REMOVEENTRY(temp->effectslot);
         memset(temp, 0, sizeof(ALeffectslot));
-        free(temp);
+        alFree(temp);
     }
 }

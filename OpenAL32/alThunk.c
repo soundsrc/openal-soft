@@ -39,12 +39,12 @@ void alThunkInit(void)
 {
     InitializeCriticalSection(&g_ThunkLock);
     g_ThunkArraySize = 1;
-    g_ThunkArray = calloc(1, g_ThunkArraySize * sizeof(ThunkEntry));
+    g_ThunkArray = alCalloc(1, g_ThunkArraySize * sizeof(ThunkEntry));
 }
 
 void alThunkExit(void)
 {
-    free(g_ThunkArray);
+    alFree(g_ThunkArray);
     g_ThunkArray = NULL;
     g_ThunkArraySize = 0;
     DeleteCriticalSection(&g_ThunkLock);
@@ -66,7 +66,7 @@ ALuint alThunkAddEntry(ALvoid *ptr)
     {
         ThunkEntry *NewList;
 
-        NewList = realloc(g_ThunkArray, g_ThunkArraySize*2 * sizeof(ThunkEntry));
+        NewList = alRealloc(g_ThunkArray, g_ThunkArraySize*2 * sizeof(ThunkEntry));
         if(!NewList)
         {
             LeaveCriticalSection(&g_ThunkLock);

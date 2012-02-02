@@ -155,7 +155,7 @@ AL_API ALvoid AL_APIENTRY alGenBuffers(ALsizei n, ALuint *buffers)
         // Create all the new Buffers
         while(i < n)
         {
-            ALbuffer *buffer = calloc(1, sizeof(ALbuffer));
+            ALbuffer *buffer = alCalloc(1, sizeof(ALbuffer));
             if(!buffer)
             {
                 alSetError(Context, AL_OUT_OF_MEMORY);
@@ -169,7 +169,7 @@ AL_API ALvoid AL_APIENTRY alGenBuffers(ALsizei n, ALuint *buffers)
             {
                 ALTHUNK_REMOVEENTRY(buffer->buffer);
                 memset(buffer, 0, sizeof(ALbuffer));
-                free(buffer);
+                alFree(buffer);
 
                 alSetError(Context, err);
                 alDeleteBuffers(i, buffers);
@@ -240,14 +240,14 @@ AL_API ALvoid AL_APIENTRY alDeleteBuffers(ALsizei n, const ALuint *buffers)
                 continue;
 
             /* Release the memory used to store audio data */
-            free(ALBuf->data);
+            alFree(ALBuf->data);
 
             /* Release buffer structure */
             RemoveUIntMapKey(&device->BufferMap, ALBuf->buffer);
             ALTHUNK_REMOVEENTRY(ALBuf->buffer);
 
             memset(ALBuf, 0, sizeof(ALbuffer));
-            free(ALBuf);
+            alFree(ALBuf);
         }
     }
 
@@ -1533,7 +1533,7 @@ static ALenum LoadData(ALbuffer *ALBuf, ALuint freq, ALenum NewFormat, ALsizei s
         if(newsize > INT_MAX)
             return AL_OUT_OF_MEMORY;
 
-        temp = realloc(ALBuf->data, newsize);
+        temp = alRealloc(ALBuf->data, newsize);
         if(!temp && newsize) return AL_OUT_OF_MEMORY;
         ALBuf->data = temp;
         ALBuf->size = newsize;
@@ -1560,7 +1560,7 @@ static ALenum LoadData(ALbuffer *ALBuf, ALuint freq, ALenum NewFormat, ALsizei s
         if(newsize > INT_MAX)
             return AL_OUT_OF_MEMORY;
 
-        temp = realloc(ALBuf->data, newsize);
+        temp = alRealloc(ALBuf->data, newsize);
         if(!temp && newsize) return AL_OUT_OF_MEMORY;
         ALBuf->data = temp;
         ALBuf->size = newsize;
@@ -1887,10 +1887,10 @@ ALvoid ReleaseALBuffers(ALCdevice *device)
         ALbuffer *temp = device->BufferMap.array[i].value;
         device->BufferMap.array[i].value = NULL;
 
-        free(temp->data);
+        alFree(temp->data);
 
         ALTHUNK_REMOVEENTRY(temp->buffer);
         memset(temp, 0, sizeof(ALbuffer));
-        free(temp);
+        alFree(temp);
     }
 }

@@ -494,6 +494,12 @@ void al_print(const char *fname, unsigned int line, const char *fmt, ...)
              PRINTF_STYLE(3,4);
 #define AL_PRINT(...) al_print(__FILE__, __LINE__, __VA_ARGS__)
 
+// al allocator functions 
+void *alMalloc(size_t size);
+void *alRealloc(void *ptr,size_t size);
+void *alCalloc(size_t count,size_t size);
+void alFree(void *ptr);
+    
 #ifdef __cplusplus
 }
 #endif

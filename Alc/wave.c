@@ -173,12 +173,12 @@ static ALCboolean wave_open_playback(ALCdevice *device, const ALCchar *deviceNam
     else if(strcmp(deviceName, waveDevice) != 0)
         return ALC_FALSE;
 
-    data = (wave_data*)calloc(1, sizeof(wave_data));
+    data = (wave_data*)alCalloc(1, sizeof(wave_data));
 
     data->f = fopen(fname, "wb");
     if(!data->f)
     {
-        free(data);
+        alFree(data);
         AL_PRINT("Could not open file '%s': %s\n", fname, strerror(errno));
         return ALC_FALSE;
     }
@@ -193,7 +193,7 @@ static void wave_close_playback(ALCdevice *device)
     wave_data *data = (wave_data*)device->ExtraData;
 
     fclose(data->f);
-    free(data);
+    alFree(data);
     device->ExtraData = NULL;
 }
 
@@ -263,7 +263,7 @@ static ALCboolean wave_reset_playback(ALCdevice *device)
     data->DataStart = ftell(data->f);
 
     data->size = device->UpdateSize * channels * bits / 8;
-    data->buffer = malloc(data->size);
+    data->buffer = alMalloc(data->size);
     if(!data->buffer)
     {
         AL_PRINT("buffer malloc failed\n");
@@ -275,7 +275,7 @@ static ALCboolean wave_reset_playback(ALCdevice *device)
     data->thread = StartThread(WaveProc, device);
     if(data->thread == NULL)
     {
-        free(data->buffer);
+        alFree(data->buffer);
         data->buffer = NULL;
         return ALC_FALSE;
     }
@@ -298,7 +298,7 @@ static void wave_stop_playback(ALCdevice *device)
 
     data->killNow = 0;
 
-    free(data->buffer);
+    alFree(data->buffer);
     data->buffer = NULL;
 
     size = ftell(data->f);

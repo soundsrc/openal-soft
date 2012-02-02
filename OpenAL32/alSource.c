@@ -78,7 +78,7 @@ AL_API ALvoid AL_APIENTRY alGenSources(ALsizei n,ALuint *sources)
         i = 0;
         while(i < n)
         {
-            ALsource *source = calloc(1, sizeof(ALsource));
+            ALsource *source = alCalloc(1, sizeof(ALsource));
             if(!source)
             {
                 alSetError(Context, AL_OUT_OF_MEMORY);
@@ -93,7 +93,7 @@ AL_API ALvoid AL_APIENTRY alGenSources(ALsizei n,ALuint *sources)
             {
                 ALTHUNK_REMOVEENTRY(source->source);
                 memset(source, 0, sizeof(ALsource));
-                free(source);
+                alFree(source);
 
                 alSetError(Context, err);
                 alDeleteSources(i, sources);
@@ -164,7 +164,7 @@ AL_API ALvoid AL_APIENTRY alDeleteSources(ALsizei n, const ALuint *sources)
 
                 if(BufferList->buffer != NULL)
                     BufferList->buffer->refcount--;
-                free(BufferList);
+                alFree(BufferList);
             }
 
             for(j = 0;j < MAX_SENDS;++j)
@@ -179,7 +179,7 @@ AL_API ALvoid AL_APIENTRY alDeleteSources(ALsizei n, const ALuint *sources)
             ALTHUNK_REMOVEENTRY(Source->source);
 
             memset(Source,0,sizeof(ALsource));
-            free(Source);
+            alFree(Source);
         }
     }
 
@@ -547,7 +547,7 @@ AL_API ALvoid AL_APIENTRY alSourcei(ALuint source,ALenum eParam,ALint lValue)
 
                             if(BufferListItem->buffer)
                                 BufferListItem->buffer->refcount--;
-                            free(BufferListItem);
+                            alFree(BufferListItem);
                         }
                         Source->BuffersInQueue = 0;
 
@@ -558,7 +558,7 @@ AL_API ALvoid AL_APIENTRY alSourcei(ALuint source,ALenum eParam,ALint lValue)
                             Source->lSourceType = AL_STATIC;
 
                             // Add the selected buffer to the queue
-                            BufferListItem = malloc(sizeof(ALbufferlistitem));
+                            BufferListItem = alMalloc(sizeof(ALbufferlistitem));
                             BufferListItem->buffer = buffer;
                             BufferListItem->next = NULL;
                             BufferListItem->prev = NULL;
@@ -1305,7 +1305,7 @@ AL_API ALvoid AL_APIENTRY alSourcePlayv(ALsizei n, const ALuint *sources)
 
         newcount = Context->MaxActiveSources << 1;
         if(newcount > 0)
-            temp = realloc(Context->ActiveSources,
+            temp = alRealloc(Context->ActiveSources,
                            sizeof(*Context->ActiveSources) * newcount);
         if(!temp)
         {
@@ -1624,7 +1624,7 @@ AL_API ALvoid AL_APIENTRY alSourceQueueBuffers(ALuint source, ALsizei n, const A
     buffer = (ALbuffer*)ALTHUNK_LOOKUPENTRY(buffers[0]);
 
     // All buffers are valid - so add them to the list
-    BufferListStart = malloc(sizeof(ALbufferlistitem));
+    BufferListStart = alMalloc(sizeof(ALbufferlistitem));
     BufferListStart->buffer = buffer;
     BufferListStart->next = NULL;
     BufferListStart->prev = NULL;
@@ -1638,7 +1638,7 @@ AL_API ALvoid AL_APIENTRY alSourceQueueBuffers(ALuint source, ALsizei n, const A
     {
         buffer = (ALbuffer*)ALTHUNK_LOOKUPENTRY(buffers[i]);
 
-        BufferList->next = malloc(sizeof(ALbufferlistitem));
+        BufferList->next = alMalloc(sizeof(ALbufferlistitem));
         BufferList->next->buffer = buffer;
         BufferList->next->next = NULL;
         BufferList->next->prev = BufferList;
@@ -1725,7 +1725,7 @@ AL_API ALvoid AL_APIENTRY alSourceUnqueueBuffers( ALuint source, ALsizei n, ALui
             buffers[i] = 0;
 
         // Release memory for buffer list item
-        free(BufferList);
+        alFree(BufferList);
         Source->BuffersInQueue--;
     }
     if(Source->queue)
@@ -2049,7 +2049,7 @@ ALvoid ReleaseALSources(ALCcontext *Context)
 
             if(BufferList->buffer != NULL)
                 BufferList->buffer->refcount--;
-            free(BufferList);
+            alFree(BufferList);
         }
 
         for(j = 0;j < MAX_SENDS;++j)
@@ -2062,6 +2062,6 @@ ALvoid ReleaseALSources(ALCcontext *Context)
         // Release source structure
         ALTHUNK_REMOVEENTRY(temp->source);
         memset(temp, 0, sizeof(ALsource));
-        free(temp);
+        alFree(temp);
     }
 }

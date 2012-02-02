@@ -238,6 +238,8 @@ static const ALCfunction alcFunctions[] = {
     { "alGetAuxiliaryEffectSlotfv", (ALCvoid *) alGetAuxiliaryEffectSlotfv},
 
     { "alBufferSubDataSOFT",        (ALCvoid *) alBufferSubDataSOFT      },
+
+    { "alcAllocatorEXT",            (ALCvoid *) alcAllocatorEXT          },
 #if 0
     { "alGenDatabuffersEXT",        (ALCvoid *) alGenDatabuffersEXT      },
     { "alDeleteDatabuffersEXT",     (ALCvoid *) alDeleteDatabuffersEXT   },
@@ -327,7 +329,7 @@ static const ALCchar alcNoDeviceExtList[] =
     "ALC_EXT_thread_local_context";
 static const ALCchar alcExtensionList[] =
     "ALC_ENUMERATE_ALL_EXT ALC_ENUMERATION_EXT ALC_EXT_CAPTURE "
-    "ALC_EXT_disconnect ALC_EXT_EFX ALC_EXT_thread_local_context";
+    "ALC_EXT_disconnect ALC_EXT_EFX ALC_EXT_thread_local_context ALC_EXT_allocator";
 static const ALCint alcMajorVersion = 1;
 static const ALCint alcMinorVersion = 1;
 
@@ -371,7 +373,6 @@ static ALint RTPrioLevel;
 static FILE *LogFile;
 
 ///////////////////////////////////////////////////////
-
 
 ///////////////////////////////////////////////////////
 // ALC Related helper functions
@@ -558,7 +559,7 @@ static void ProbeDeviceList()
 {
     ALint i;
 
-    free(alcDeviceList); alcDeviceList = NULL;
+    alFree(alcDeviceList); alcDeviceList = NULL;
     alcDeviceListSize = 0;
 
     for(i = 0;BackendList[i].Probe;i++)
@@ -569,7 +570,7 @@ static void ProbeAllDeviceList()
 {
     ALint i;
 
-    free(alcAllDeviceList); alcAllDeviceList = NULL;
+    alFree(alcAllDeviceList); alcAllDeviceList = NULL;
     alcAllDeviceListSize = 0;
 
     for(i = 0;BackendList[i].Probe;i++)
@@ -580,7 +581,7 @@ static void ProbeCaptureDeviceList()
 {
     ALint i;
 
-    free(alcCaptureDeviceList); alcCaptureDeviceList = NULL;
+    alFree(alcCaptureDeviceList); alcCaptureDeviceList = NULL;
     alcCaptureDeviceListSize = 0;
 
     for(i = 0;BackendList[i].Probe;i++)
@@ -596,7 +597,7 @@ static void AppendList(const ALCchar *name, ALCchar **List, size_t *ListSize)
     if(len == 0)
         return;
 
-    temp = realloc(*List, (*ListSize) + len + 2);
+    temp = alRealloc(*List, (*ListSize) + len + 2);
     if(!temp)
     {
         AL_PRINT("Realloc failed to add %s!\n", name);
@@ -690,7 +691,7 @@ void InitUIntMap(UIntMap *map)
 
 void ResetUIntMap(UIntMap *map)
 {
-    free(map->array);
+    alFree(map->array);
     map->array = NULL;
     map->size = 0;
     map->maxsize = 0;
@@ -728,7 +729,7 @@ ALenum InsertUIntMapEntry(UIntMap *map, ALuint key, ALvoid *value)
             if(newsize < map->maxsize)
                 return AL_OUT_OF_MEMORY;
 
-            temp = realloc(map->array, newsize*sizeof(map->array[0]));
+            temp = alRealloc(map->array, newsize*sizeof(map->array[0]));
             if(!temp) return AL_OUT_OF_MEMORY;
             map->array = temp;
             map->maxsize = newsize;
@@ -1078,7 +1079,7 @@ static ALCboolean UpdateDeviceParams(ALCdevice *device, const ALCint *attrList)
     {
         if(!device->Bs2b)
         {
-            device->Bs2b = calloc(1, sizeof(*device->Bs2b));
+            device->Bs2b = alCalloc(1, sizeof(*device->Bs2b));
             bs2b_clear(device->Bs2b);
         }
         bs2b_set_srate(device->Bs2b, device->Frequency);
@@ -1086,7 +1087,7 @@ static ALCboolean UpdateDeviceParams(ALCdevice *device, const ALCint *attrList)
     }
     else
     {
-        free(device->Bs2b);
+        alFree(device->Bs2b);
         device->Bs2b = NULL;
     }
 
@@ -1231,7 +1232,7 @@ ALC_API ALCdevice* ALC_APIENTRY alcCaptureOpenDevice(const ALCchar *deviceName, 
     if(deviceName && !deviceName[0])
         deviceName = NULL;
 
-    device = calloc(1, sizeof(ALCdevice));
+    device = alCalloc(1, sizeof(ALCdevice));
     if(!device)
     {
         alcSetError(NULL, ALC_OUT_OF_MEMORY);
@@ -1247,7 +1248,7 @@ ALC_API ALCdevice* ALC_APIENTRY alcCaptureOpenDevice(const ALCchar *deviceName, 
     device->Frequency = frequency;
     if(DecomposeDevFormat(format, &device->FmtChans, &device->FmtType) == AL_FALSE)
     {
-        free(device);
+        alFree(device);
         alcSetError(NULL, ALC_INVALID_ENUM);
         return NULL;
     }
@@ -1274,7 +1275,7 @@ ALC_API ALCdevice* ALC_APIENTRY alcCaptureOpenDevice(const ALCchar *deviceName, 
     if(!DeviceFound)
     {
         alcSetError(NULL, ALC_INVALID_VALUE);
-        free(device);
+        alFree(device);
         device = NULL;
     }
 
@@ -1304,10 +1305,10 @@ ALC_API ALCboolean ALC_APIENTRY alcCaptureCloseDevice(ALCdevice *pDevice)
 
     ALCdevice_CloseCapture(pDevice);
 
-    free(pDevice->szDeviceName);
+    alFree(pDevice->szDeviceName);
     pDevice->szDeviceName = NULL;
 
-    free(pDevice);
+    alFree(pDevice);
 
     return ALC_TRUE;
 }
@@ -1458,7 +1459,7 @@ ALC_API const ALCchar* ALC_APIENTRY alcGetString(ALCdevice *pDevice,ALCenum para
         if(!alcDeviceList)
             ProbeDeviceList();
 
-        free(alcDefaultDeviceSpecifier);
+        alFree(alcDefaultDeviceSpecifier);
         alcDefaultDeviceSpecifier = strdup(alcDeviceList ? alcDeviceList : "");
         if(!alcDefaultDeviceSpecifier)
             alcSetError(pDevice, ALC_OUT_OF_MEMORY);
@@ -1469,7 +1470,7 @@ ALC_API const ALCchar* ALC_APIENTRY alcGetString(ALCdevice *pDevice,ALCenum para
         if(!alcAllDeviceList)
             ProbeAllDeviceList();
 
-        free(alcDefaultAllDeviceSpecifier);
+        alFree(alcDefaultAllDeviceSpecifier);
         alcDefaultAllDeviceSpecifier = strdup(alcAllDeviceList ?
                                               alcAllDeviceList : "");
         if(!alcDefaultAllDeviceSpecifier)
@@ -1481,7 +1482,7 @@ ALC_API const ALCchar* ALC_APIENTRY alcGetString(ALCdevice *pDevice,ALCenum para
         if(!alcCaptureDeviceList)
             ProbeCaptureDeviceList();
 
-        free(alcCaptureDefaultDeviceSpecifier);
+        alFree(alcCaptureDefaultDeviceSpecifier);
         alcCaptureDefaultDeviceSpecifier = strdup(alcCaptureDeviceList ?
                                                   alcCaptureDeviceList : "");
         if(!alcCaptureDefaultDeviceSpecifier)
@@ -1770,22 +1771,22 @@ ALC_API ALCcontext* ALC_APIENTRY alcCreateContext(ALCdevice *device, const ALCin
     }
 
     ALContext = NULL;
-    temp = realloc(device->Contexts, (device->NumContexts+1) * sizeof(*device->Contexts));
+    temp = alRealloc(device->Contexts, (device->NumContexts+1) * sizeof(*device->Contexts));
     if(temp)
     {
         device->Contexts = temp;
 
-        ALContext = calloc(1, sizeof(ALCcontext));
+        ALContext = alCalloc(1, sizeof(ALCcontext));
         if(ALContext)
         {
             ALContext->MaxActiveSources = 256;
-            ALContext->ActiveSources = malloc(sizeof(ALContext->ActiveSources[0]) *
+            ALContext->ActiveSources = alMalloc(sizeof(ALContext->ActiveSources[0]) *
                                               ALContext->MaxActiveSources);
         }
     }
     if(!ALContext || !ALContext->ActiveSources)
     {
-        free(ALContext);
+        alFree(ALContext);
         alcSetError(device, ALC_OUT_OF_MEMORY);
         ProcessContext(NULL);
         if(device->NumContexts == 0)
@@ -1866,7 +1867,7 @@ ALC_API ALCvoid ALC_APIENTRY alcDestroyContext(ALCcontext *context)
     }
     ResetUIntMap(&context->EffectSlotMap);
 
-    free(context->ActiveSources);
+    alFree(context->ActiveSources);
     context->ActiveSources = NULL;
     context->MaxActiveSources = 0;
     context->ActiveSourceCount = 0;
@@ -1886,7 +1887,7 @@ ALC_API ALCvoid ALC_APIENTRY alcDestroyContext(ALCcontext *context)
 
     // Free memory (MUST do this after ProcessContext)
     memset(context, 0, sizeof(ALCcontext));
-    free(context);
+    alFree(context);
 }
 
 
@@ -2126,7 +2127,7 @@ ALC_API ALCdevice* ALC_APIENTRY alcOpenDevice(const ALCchar *deviceName)
     if(deviceName && !deviceName[0])
         deviceName = NULL;
 
-    device = calloc(1, sizeof(ALCdevice));
+    device = alCalloc(1, sizeof(ALCdevice));
     if(!device)
     {
         alcSetError(NULL, ALC_OUT_OF_MEMORY);
@@ -2215,7 +2216,7 @@ ALC_API ALCdevice* ALC_APIENTRY alcOpenDevice(const ALCchar *deviceName)
     {
         // No suitable output device found
         alcSetError(NULL, ALC_INVALID_VALUE);
-        free(device);
+        alFree(device);
         device = NULL;
     }
 
@@ -2295,18 +2296,18 @@ ALC_API ALCboolean ALC_APIENTRY alcCloseDevice(ALCdevice *pDevice)
     }
     ResetUIntMap(&pDevice->DatabufferMap);
 
-    free(pDevice->Bs2b);
+    alFree(pDevice->Bs2b);
     pDevice->Bs2b = NULL;
 
-    free(pDevice->szDeviceName);
+    alFree(pDevice->szDeviceName);
     pDevice->szDeviceName = NULL;
 
-    free(pDevice->Contexts);
+    alFree(pDevice->Contexts);
     pDevice->Contexts = NULL;
 
     //Release device structure
     memset(pDevice, 0, sizeof(ALCdevice));
-    free(pDevice);
+    alFree(pDevice);
 
     return ALC_TRUE;
 }
@@ -2314,18 +2315,18 @@ ALC_API ALCboolean ALC_APIENTRY alcCloseDevice(ALCdevice *pDevice)
 
 static void ReleaseALC(void)
 {
-    free(alcDeviceList); alcDeviceList = NULL;
+    alFree(alcDeviceList); alcDeviceList = NULL;
     alcDeviceListSize = 0;
-    free(alcAllDeviceList); alcAllDeviceList = NULL;
+    alFree(alcAllDeviceList); alcAllDeviceList = NULL;
     alcAllDeviceListSize = 0;
-    free(alcCaptureDeviceList); alcCaptureDeviceList = NULL;
+    alFree(alcCaptureDeviceList); alcCaptureDeviceList = NULL;
     alcCaptureDeviceListSize = 0;
 
-    free(alcDefaultDeviceSpecifier);
+    alFree(alcDefaultDeviceSpecifier);
     alcDefaultDeviceSpecifier = NULL;
-    free(alcDefaultAllDeviceSpecifier);
+    alFree(alcDefaultAllDeviceSpecifier);
     alcDefaultAllDeviceSpecifier = NULL;
-    free(alcCaptureDefaultDeviceSpecifier);
+    alFree(alcCaptureDefaultDeviceSpecifier);
     alcCaptureDefaultDeviceSpecifier = NULL;
 
 #ifdef _DEBUG

@@ -158,6 +158,20 @@ AL_API ALvoid AL_APIENTRY alBufferSubDataSOFT(ALuint buffer,ALenum format,const 
 #define AL_LOOP_POINTS_SOFT                      0x2015
 #endif
 
+#ifndef AL_EXT_allocator
+#define AL_EXT_allocator 1
+
+typedef void * (*ALCmallocFunc)(size_t);
+typedef void * (*ALCreallocFunc)(void *,size_t);
+typedef void (*ALCfreeFunc)(void *);
+
+typedef ALvoid (AL_APIENTRY *PFNALALLOCATOREXTPROC)(ALCmallocFunc mallocFunc,ALCreallocFunc reallocFunc,ALCfreeFunc freeFunc);
+#ifdef AL_ALEXT_PROTOTYPES
+AL_API ALCvoid AL_APIENTRY alcAllocatorEXT(ALCmallocFunc mallocFunc,ALCreallocFunc reallocFunc,ALCfreeFunc freeFunc);
+#endif
+
+#endif
+
 #ifdef __cplusplus
 }
 #endif

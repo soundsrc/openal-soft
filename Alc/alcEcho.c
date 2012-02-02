@@ -60,9 +60,9 @@ static ALvoid EchoDestroy(ALeffectState *effect)
     ALechoState *state = (ALechoState*)effect;
     if(state)
     {
-        free(state->SampleBuffer);
+        alFree(state->SampleBuffer);
         state->SampleBuffer = NULL;
-        free(state);
+        alFree(state);
     }
 }
 
@@ -81,7 +81,7 @@ static ALboolean EchoDeviceUpdate(ALeffectState *effect, ALCdevice *Device)
     {
         void *temp;
 
-        temp = realloc(state->SampleBuffer, maxlen * sizeof(ALfloat));
+        temp = alRealloc(state->SampleBuffer, maxlen * sizeof(ALfloat));
         if(!temp)
             return AL_FALSE;
         state->SampleBuffer = temp;
@@ -170,7 +170,7 @@ ALeffectState *EchoCreate(void)
 {
     ALechoState *state;
 
-    state = malloc(sizeof(*state));
+    state = alMalloc(sizeof(*state));
     if(!state)
         return NULL;
 

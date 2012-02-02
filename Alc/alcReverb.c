@@ -281,7 +281,7 @@ static ALboolean AllocLines(ALboolean eaxFlag, ALuint frequency, ALverbState *St
 
     if(totalSamples != State->TotalSamples)
     {
-        newBuffer = realloc(State->SampleBuffer, sizeof(ALfloat) * totalSamples);
+        newBuffer = alRealloc(State->SampleBuffer, sizeof(ALfloat) * totalSamples);
         if(newBuffer == NULL)
             return AL_FALSE;
         State->SampleBuffer = newBuffer;
@@ -985,9 +985,9 @@ static ALvoid VerbDestroy(ALeffectState *effect)
     ALverbState *State = (ALverbState*)effect;
     if(State)
     {
-        free(State->SampleBuffer);
+        alFree(State->SampleBuffer);
         State->SampleBuffer = NULL;
-        free(State);
+        alFree(State);
     }
 }
 
@@ -1243,7 +1243,7 @@ ALeffectState *VerbCreate(void)
     ALverbState *State = NULL;
     ALuint index;
 
-    State = malloc(sizeof(ALverbState));
+    State = alMalloc(sizeof(ALverbState));
     if(!State)
         return NULL;
 

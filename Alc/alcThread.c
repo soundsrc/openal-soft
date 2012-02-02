@@ -48,7 +48,7 @@ static DWORD CALLBACK StarterFunc(void *ptr)
 ALvoid *StartThread(ALuint (*func)(ALvoid*), ALvoid *ptr)
 {
     DWORD dummy;
-    ThreadInfo *inf = malloc(sizeof(ThreadInfo));
+    ThreadInfo *inf = alMalloc(sizeof(ThreadInfo));
     if(!inf) return 0;
 
     inf->func = func;
@@ -57,7 +57,7 @@ ALvoid *StartThread(ALuint (*func)(ALvoid*), ALvoid *ptr)
     inf->thread = CreateThread(NULL, 0, StarterFunc, inf, 0, &dummy);
     if(!inf->thread)
     {
-        free(inf);
+        alFree(inf);
         return NULL;
     }
 
@@ -73,7 +73,7 @@ ALuint StopThread(ALvoid *thread)
     GetExitCodeThread(inf->thread, &ret);
     CloseHandle(inf->thread);
 
-    free(inf);
+    alFree(inf);
 
     return (ALuint)ret;
 }
@@ -98,14 +98,14 @@ static void *StarterFunc(void *ptr)
 
 ALvoid *StartThread(ALuint (*func)(ALvoid*), ALvoid *ptr)
 {
-    ThreadInfo *inf = malloc(sizeof(ThreadInfo));
+    ThreadInfo *inf = alMalloc(sizeof(ThreadInfo));
     if(!inf) return NULL;
 
     inf->func = func;
     inf->ptr = ptr;
     if(pthread_create(&inf->thread, NULL, StarterFunc, inf) != 0)
     {
-        free(inf);
+        alFree(inf);
         return NULL;
     }
 
@@ -120,7 +120,7 @@ ALuint StopThread(ALvoid *thread)
     pthread_join(inf->thread, NULL);
     ret = inf->ret;
 
-    free(inf);
+    alFree(inf);
 
     return ret;
 }

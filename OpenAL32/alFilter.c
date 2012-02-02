@@ -51,7 +51,7 @@ AL_API ALvoid AL_APIENTRY alGenFilters(ALsizei n, ALuint *filters)
 
         while(i < n)
         {
-            ALfilter *filter = calloc(1, sizeof(ALfilter));
+            ALfilter *filter = alCalloc(1, sizeof(ALfilter));
             if(!filter)
             {
                 alSetError(Context, AL_OUT_OF_MEMORY);
@@ -65,7 +65,7 @@ AL_API ALvoid AL_APIENTRY alGenFilters(ALsizei n, ALuint *filters)
             {
                 ALTHUNK_REMOVEENTRY(filter->filter);
                 memset(filter, 0, sizeof(ALfilter));
-                free(filter);
+                alFree(filter);
 
                 alSetError(Context, err);
                 alDeleteFilters(i, filters);
@@ -126,7 +126,7 @@ AL_API ALvoid AL_APIENTRY alDeleteFilters(ALsizei n, ALuint *filters)
             ALTHUNK_REMOVEENTRY(ALFilter->filter);
 
             memset(ALFilter, 0, sizeof(ALfilter));
-            free(ALFilter);
+            alFree(ALFilter);
         }
     }
 
@@ -417,7 +417,7 @@ ALvoid ReleaseALFilters(ALCdevice *device)
         // Release filter structure
         ALTHUNK_REMOVEENTRY(temp->filter);
         memset(temp, 0, sizeof(ALfilter));
-        free(temp);
+        alFree(temp);
     }
 }
 

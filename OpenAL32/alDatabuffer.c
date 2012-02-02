@@ -58,7 +58,7 @@ AL_API ALvoid AL_APIENTRY alGenDatabuffersEXT(ALsizei n,ALuint *puiBuffers)
         /* Create all the new Databuffers */
         while(i < n)
         {
-            ALdatabuffer *buffer = calloc(1, sizeof(ALdatabuffer));
+            ALdatabuffer *buffer = alCalloc(1, sizeof(ALdatabuffer));
             if(!buffer)
             {
                 alSetError(Context, AL_OUT_OF_MEMORY);
@@ -73,7 +73,7 @@ AL_API ALvoid AL_APIENTRY alGenDatabuffersEXT(ALsizei n,ALuint *puiBuffers)
             {
                 ALTHUNK_REMOVEENTRY(buffer->databuffer);
                 memset(buffer, 0, sizeof(ALdatabuffer));
-                free(buffer);
+                alFree(buffer);
 
                 alSetError(Context, err);
                 alDeleteDatabuffersEXT(i, puiBuffers);
@@ -151,14 +151,14 @@ AL_API ALvoid AL_APIENTRY alDeleteDatabuffersEXT(ALsizei n, const ALuint *buffer
                 Context->SampleSink = NULL;
 
             // Release the memory used to store audio data
-            free(ALBuf->data);
+            alFree(ALBuf->data);
 
             // Release buffer structure
             RemoveUIntMapKey(&device->DatabufferMap, ALBuf->databuffer);
             ALTHUNK_REMOVEENTRY(ALBuf->databuffer);
 
             memset(ALBuf, 0, sizeof(ALdatabuffer));
-            free(ALBuf);
+            alFree(ALBuf);
         }
     }
 
@@ -217,7 +217,7 @@ AL_API ALvoid AL_APIENTRY alDatabufferDataEXT(ALuint buffer,const ALvoid *data,A
                 if(size >= 0)
                 {
                     /* (Re)allocate data */
-                    temp = realloc(ALBuf->data, size);
+                    temp = alRealloc(ALBuf->data, size);
                     if(temp)
                     {
                         ALBuf->data = temp;
@@ -638,11 +638,11 @@ ALvoid ReleaseALDatabuffers(ALCdevice *device)
         device->DatabufferMap.array[i].value = NULL;
 
         // Release buffer data
-        free(temp->data);
+        alFree(temp->data);
 
         // Release Buffer structure
         ALTHUNK_REMOVEENTRY(temp->databuffer);
         memset(temp, 0, sizeof(ALdatabuffer));
-        free(temp);
+        alFree(temp);
     }
 }

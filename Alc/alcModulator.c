@@ -84,7 +84,7 @@ static __inline ALfloat hpFilter1P(FILTER *iir, ALuint offset, ALfloat input)
 static ALvoid ModulatorDestroy(ALeffectState *effect)
 {
     ALmodulatorState *state = (ALmodulatorState*)effect;
-    free(state);
+    alFree(state);
 }
 
 static ALboolean ModulatorDeviceUpdate(ALeffectState *effect, ALCdevice *Device)
@@ -186,7 +186,7 @@ ALeffectState *ModulatorCreate(void)
 {
     ALmodulatorState *state;
 
-    state = malloc(sizeof(*state));
+    state = alMalloc(sizeof(*state));
     if(!state)
         return NULL;
 

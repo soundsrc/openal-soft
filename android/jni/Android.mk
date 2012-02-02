@@ -22,6 +22,7 @@ LOCAL_SRC_FILES  := ../../OpenAL32/alAuxEffectSlot.c \
                     ../../OpenAL32/alState.c         \
                     ../../OpenAL32/alThunk.c         \
                     ../../Alc/ALc.c                  \
+                    ../../Alc/alcAllocator.c         \
                     ../../Alc/alcConfig.c            \
                     ../../Alc/alcEcho.c              \
                     ../../Alc/alcModulator.c         \

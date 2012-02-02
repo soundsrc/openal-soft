@@ -109,7 +109,7 @@ static void LoadConfigFromFile(FILE *f)
 
             if(!nextBlock)
             {
-                nextBlock = realloc(cfgBlocks, (cfgCount+1)*sizeof(ConfigBlock));
+                nextBlock = alRealloc(cfgBlocks, (cfgCount+1)*sizeof(ConfigBlock));
                 if(!nextBlock)
                 {
                      AL_PRINT("config parse error: error reallocating config blocks\n");
@@ -171,7 +171,7 @@ static void LoadConfigFromFile(FILE *f)
         if((size_t)(ent-curBlock->entries) >= curBlock->entryCount)
         {
             /* Allocate a new option entry */
-            ent = realloc(curBlock->entries, (curBlock->entryCount+1)*sizeof(ConfigEntry));
+            ent = alRealloc(curBlock->entries, (curBlock->entryCount+1)*sizeof(ConfigEntry));
             if(!ent)
             {
                  AL_PRINT("config parse error: error reallocating config entries\n");
@@ -197,7 +197,7 @@ static void LoadConfigFromFile(FILE *f)
         } while(isspace(buffer[i]));
         buffer[++i] = 0;
 
-        free(ent->value);
+        alFree(ent->value);
         ent->value = strdup(buffer);
 
 //        AL_PRINT("found '%s' = '%s'\n", ent->key, ent->value);
@@ -208,7 +208,7 @@ void ReadALConfig(void)
 {
     FILE *f;
 
-    cfgBlocks = calloc(1, sizeof(ConfigBlock));
+    cfgBlocks = alCalloc(1, sizeof(ConfigBlock));
     cfgBlocks->name = strdup("general");
     cfgCount = 1;
 
@@ -262,13 +262,13 @@ void FreeALConfig(void)
         size_t j;
         for(j = 0;j < cfgBlocks[i].entryCount;j++)
         {
-           free(cfgBlocks[i].entries[j].key);
-           free(cfgBlocks[i].entries[j].value);
+           alFree(cfgBlocks[i].entries[j].key);
+           alFree(cfgBlocks[i].entries[j].value);
         }
-        free(cfgBlocks[i].entries);
-        free(cfgBlocks[i].name);
+        alFree(cfgBlocks[i].entries);
+        alFree(cfgBlocks[i].name);
     }
-    free(cfgBlocks);
+    alFree(cfgBlocks);
     cfgBlocks = NULL;
     cfgCount = 0;
 }

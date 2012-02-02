@@ -85,7 +85,7 @@ static ALCboolean null_open_playback(ALCdevice *device, const ALCchar *deviceNam
     else if(strcmp(deviceName, nullDevice) != 0)
         return ALC_FALSE;
 
-    data = (null_data*)calloc(1, sizeof(*data));
+    data = (null_data*)alCalloc(1, sizeof(*data));
 
     device->szDeviceName = strdup(deviceName);
     device->ExtraData = data;
@@ -96,7 +96,7 @@ static void null_close_playback(ALCdevice *device)
 {
     null_data *data = (null_data*)device->ExtraData;
 
-    free(data);
+    alFree(data);
     device->ExtraData = NULL;
 }
 
@@ -106,7 +106,7 @@ static ALCboolean null_reset_playback(ALCdevice *device)
 
     data->size = device->UpdateSize * FrameSizeFromDevFmt(device->FmtChans,
                                                           device->FmtType);
-    data->buffer = malloc(data->size);
+    data->buffer = alMalloc(data->size);
     if(!data->buffer)
     {
         AL_PRINT("buffer malloc failed\n");
@@ -117,7 +117,7 @@ static ALCboolean null_reset_playback(ALCdevice *device)
     data->thread = StartThread(NullProc, device);
     if(data->thread == NULL)
     {
-        free(data->buffer);
+        alFree(data->buffer);
         data->buffer = NULL;
         return ALC_FALSE;
     }
@@ -138,7 +138,7 @@ static void null_stop_playback(ALCdevice *device)
 
     data->killNow = 0;
 
-    free(data->buffer);
+    alFree(data->buffer);
     data->buffer = NULL;
 }
 

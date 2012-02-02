@@ -55,7 +55,7 @@ AL_API ALvoid AL_APIENTRY alGenEffects(ALsizei n, ALuint *effects)
 
         while(i < n)
         {
-            ALeffect *effect = calloc(1, sizeof(ALeffect));
+            ALeffect *effect = alCalloc(1, sizeof(ALeffect));
             if(!effect)
             {
                 alSetError(Context, AL_OUT_OF_MEMORY);
@@ -69,7 +69,7 @@ AL_API ALvoid AL_APIENTRY alGenEffects(ALsizei n, ALuint *effects)
             {
                 ALTHUNK_REMOVEENTRY(effect->effect);
                 memset(effect, 0, sizeof(ALeffect));
-                free(effect);
+                alFree(effect);
 
                 alSetError(Context, err);
                 alDeleteEffects(i, effects);
@@ -130,7 +130,7 @@ AL_API ALvoid AL_APIENTRY alDeleteEffects(ALsizei n, ALuint *effects)
             ALTHUNK_REMOVEENTRY(ALEffect->effect);
 
             memset(ALEffect, 0, sizeof(ALeffect));
-            free(ALEffect);
+            alFree(ALEffect);
         }
     }
 
@@ -1316,7 +1316,7 @@ ALvoid ReleaseALEffects(ALCdevice *device)
         // Release effect structure
         ALTHUNK_REMOVEENTRY(temp->effect);
         memset(temp, 0, sizeof(ALeffect));
-        free(temp);
+        alFree(temp);
     }
 }
 
